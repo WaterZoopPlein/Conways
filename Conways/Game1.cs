@@ -17,9 +17,6 @@ namespace Conways
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private MouseState _oldMouseState;
-        private KeyboardState _oldKeyboardState;
-
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -44,9 +41,6 @@ namespace Conways
 
             _tileColorList = DrawTilesUtility.GenerateRandomTiles(_graphics, _tileColors);
 
-            _oldMouseState = Mouse.GetState();
-            _oldKeyboardState = Keyboard.GetState();
-
             base.Initialize();
         }
 
@@ -60,59 +54,57 @@ namespace Conways
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            InputManager.Instance.Update();
+
+            if (InputManager.Instance.IsKeyPressed(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
-            var newKeyboardState = Keyboard.GetState();
             var newMouseState = Mouse.GetState();
 
-            if (newMouseState.LeftButton == ButtonState.Pressed)
+            var tileX = newMouseState.X < 0
+                ? 0
+                : newMouseState.X >= _graphics.PreferredBackBufferWidth
+                    ? _graphics.PreferredBackBufferWidth / _tile.Width - 1
+                    : newMouseState.X / _tile.Width;
+
+            var tileY = newMouseState.Y < 0
+                ? 0
+                : newMouseState.Y >= _graphics.PreferredBackBufferHeight
+                    ? _graphics.PreferredBackBufferHeight / _tile.Height - 1
+                    : newMouseState.Y / _tile.Height;
+
+            if (InputManager.Instance.IsMouseLeftButtonClicked())
             {
-                var tileX = newMouseState.X < 0
-                    ? 0
-                    : newMouseState.X >= _graphics.PreferredBackBufferWidth
-                        ? _graphics.PreferredBackBufferWidth / _tile.Width - 1
-                        : newMouseState.X / _tile.Width;
+                _firstClickColor = _tileColorList[tileY][tileX] == new Color(64, 64, 64)
+                    ? Color.Lime
+                    : new Color(64, 64, 64);
+            }
 
-                var tileY = newMouseState.Y < 0
-                    ? 0
-                    : newMouseState.Y >= _graphics.PreferredBackBufferHeight
-                        ? _graphics.PreferredBackBufferHeight / _tile.Height - 1
-                        : newMouseState.Y / _tile.Height;
-
-                if (_oldMouseState.LeftButton == ButtonState.Released)
-                {
-                    _firstClickColor = _tileColorList[tileY][tileX] == new Color(64, 64, 64)
-                        ? Color.Lime
-                        : new Color(64, 64, 64);
-                }
-
+            if (InputManager.Instance.IsMouseLeftButtonHeld())
+            {
                 _tileColorList[tileY][tileX] = _firstClickColor;
             }
 
-            if (newKeyboardState.IsKeyDown(Keys.Delete) && _isPausing)
+            if (InputManager.Instance.IsKeyHeld(Keys.Delete) && _isPausing)
             {
                 _tileColorList = DrawTilesUtility.ResetTiles(_graphics);
             }
 
-            if (newKeyboardState.IsKeyDown(Keys.Space) && !_oldKeyboardState.IsKeyDown(Keys.Space))
+            if (InputManager.Instance.IsKeyPressed(Keys.Space))
             {
                 _isPausing = !_isPausing;
             }
 
-            if (newKeyboardState.IsKeyDown(Keys.R) && !_oldKeyboardState.IsKeyDown(Keys.R) && _isPausing)
+            if (InputManager.Instance.IsKeyPressed(Keys.R) && _isPausing)
             {
                 _tileColorList = DrawTilesUtility.GenerateRandomTiles(_graphics, _tileColors);
             }
 
-            if (newKeyboardState.IsKeyDown(Keys.C) && !_oldKeyboardState.IsKeyDown(Keys.C) && _isPausing)
+            if (InputManager.Instance.IsKeyPressed(Keys.C) && _isPausing)
             {
                 _tileColorList = DrawTilesUtility.Checkerboard(_graphics);
             }
 
-            _oldKeyboardState = newKeyboardState;
-            _oldMouseState = newMouseState;
             base.Update(gameTime);
         }
 
