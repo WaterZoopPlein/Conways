@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Conways
 {
-    public class Game1 : Game
+    public class ConwayGameRunner : Game
     {
         private bool _isPausing;
 
@@ -17,7 +17,7 @@ namespace Conways
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        public Game1()
+        public ConwayGameRunner()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
