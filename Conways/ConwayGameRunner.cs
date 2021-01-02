@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -9,9 +8,7 @@ namespace Conways
     {
         private bool _isPausing;
 
-        private Color _firstClickColor = Color.Lime;
-        private Color[] _tileColors;
-        private List<List<Color>> _tileColorList;
+        private TileStatus _firstClickTileStatus = TileStatus.Alive;
 
         private Texture2D _tile;
         private GraphicsDeviceManager _graphics;
@@ -26,20 +23,12 @@ namespace Conways
 
         protected override void Initialize()
         {
-            _graphics.PreferredBackBufferWidth = 400;
-            _graphics.PreferredBackBufferHeight = 300;
+            _graphics.PreferredBackBufferWidth = GraphicsManager.Instance.GraphicsWidth;
+            _graphics.PreferredBackBufferHeight = GraphicsManager.Instance.GraphicsHeight;
             _graphics.ApplyChanges();
 
             // TODO: Add your initialization logic here
             _isPausing = false;
-
-            _tileColors = new[]
-            {
-                Color.Lime, new Color(64, 64, 64), new Color(64, 64, 64), new Color(64, 64, 64)
-            };
-
-
-            _tileColorList = DrawTilesUtility.GenerateRandomTiles(_graphics, _tileColors);
 
             base.Initialize();
         }
@@ -50,6 +39,8 @@ namespace Conways
 
             // TODO: use this.Content to load your game content here
             _tile = Content.Load<Texture2D>("tile");
+
+            GridManager.Instance.CreateGrid(GraphicsManager.Instance.GraphicsWidth, GraphicsManager.Instance.GraphicsHeight, _tile);
         }
 
         protected override void Update(GameTime gameTime)
@@ -75,19 +66,19 @@ namespace Conways
 
             if (InputManager.Instance.IsMouseLeftButtonClicked())
             {
-                _firstClickColor = _tileColorList[tileY][tileX] == new Color(64, 64, 64)
-                    ? Color.Lime
-                    : new Color(64, 64, 64);
+                _firstClickTileStatus = GridManager.Instance.GetTileStatus(tileY, tileX) == TileStatus.Alive
+                    ? TileStatus.Dead
+                    : TileStatus.Alive;
             }
 
             if (InputManager.Instance.IsMouseLeftButtonHeld())
             {
-                _tileColorList[tileY][tileX] = _firstClickColor;
+                GridManager.Instance.SetTileStatus(tileY, tileX, _firstClickTileStatus);
             }
 
             if (InputManager.Instance.IsKeyHeld(Keys.Delete) && _isPausing)
             {
-                _tileColorList = DrawTilesUtility.ResetTiles(_graphics);
+                GridManager.Instance.Clear();
             }
 
             if (InputManager.Instance.IsKeyPressed(Keys.Space))
@@ -97,12 +88,17 @@ namespace Conways
 
             if (InputManager.Instance.IsKeyPressed(Keys.R) && _isPausing)
             {
-                _tileColorList = DrawTilesUtility.GenerateRandomTiles(_graphics, _tileColors);
+                GridManager.Instance.GenerateRandomGrid(0.25);
             }
 
             if (InputManager.Instance.IsKeyPressed(Keys.C) && _isPausing)
             {
-                _tileColorList = DrawTilesUtility.Checkerboard(_graphics);
+                GridManager.Instance.GenerateCheckerboard();
+            }
+
+            if (gameTime.TotalGameTime.Milliseconds % 1000 == 0 && !_isPausing)
+            {
+                GridManager.Instance.GenerateRandomGrid(0.25);
             }
 
             base.Update(gameTime);
@@ -113,23 +109,9 @@ namespace Conways
             GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
-            if (gameTime.TotalGameTime.Milliseconds % 1000 == 0 && !_isPausing)
-            {
-                _tileColorList = DrawTilesUtility.GenerateRandomTiles(_graphics, _tileColors);
-            }
+            _spriteBatch.Begin();
 
-
-            _spriteBatch.Begin(SpriteSortMode.FrontToBack);
-
-            for (var i = 0; i < _graphics.PreferredBackBufferHeight / _tile.Height; i++)
-            {
-                for (var j = 0; j < _graphics.PreferredBackBufferWidth / _tile.Width; j++)
-                {
-                    var tilePosition = new Vector2(_tile.Width * j, _tile.Height * i);
-                    _spriteBatch.Draw(_tile, tilePosition, null, _tileColorList[i][j], 0f, default, Vector2.One,
-                        SpriteEffects.None, 0f);
-                }
-            }
+            GridDrawer.Instance.Draw(_spriteBatch);
 
             _spriteBatch.End();
             base.Draw(gameTime);
