@@ -1,4 +1,8 @@
-﻿namespace Conways.Model
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Conways.Model
 {
     public class ConwayModel
     {
