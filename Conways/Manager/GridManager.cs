@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using Conways.Model;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
-namespace Conways
+namespace Conways.Manager
 {
     public class GridManager
     {
         private static List<List<Tile>> _grid;
         private Random random;
-
+        private TileStatus _firstClickTileStatus;
         private static GridManager _instance;
 
         public static GridManager Instance
@@ -26,6 +29,53 @@ namespace Conways
         private GridManager(int seed = 1)
         {
             random = new Random(seed);
+        }
+
+        public void Update(GameTime gameTime, bool isPausing)
+        {
+            var tileX = InputManager.Instance.GetMouseXPosition() < 0
+                ? 0
+                : InputManager.Instance.GetMouseXPosition() / TileTexture.Width <= GridWidth - 1
+                    ? InputManager.Instance.GetMouseXPosition() / TileTexture.Width
+                    : GridWidth - 1;
+
+            var tileY = InputManager.Instance.GetMouseYPosition() < 0
+                ? 0
+                : InputManager.Instance.GetMouseYPosition() / TileTexture.Height <= GridHeight - 1
+                    ? InputManager.Instance.GetMouseYPosition() / TileTexture.Height
+                    : GridHeight - 1;
+
+            if (InputManager.Instance.IsMouseLeftButtonClicked())
+            {
+                _firstClickTileStatus = Instance.GetTileStatus(tileY, tileX) == TileStatus.Alive
+                    ? TileStatus.Dead
+                    : TileStatus.Alive;
+            }
+
+            if (InputManager.Instance.IsMouseLeftButtonHeld())
+            {
+                Instance.SetTileStatus(tileY, tileX, _firstClickTileStatus);
+            }
+
+            if (InputManager.Instance.IsKeyHeld(Keys.Delete) && isPausing)
+            {
+                Instance.Clear();
+            }
+
+            if (InputManager.Instance.IsKeyPressed(Keys.R) && isPausing)
+            {
+                Instance.GenerateRandomGrid(0.5);
+            }
+
+            if (InputManager.Instance.IsKeyPressed(Keys.C) && isPausing)
+            {
+                Instance.GenerateCheckerboard();
+            }
+
+            if (InputManager.Instance.IsKeyPressed(Keys.W) && isPausing || gameTime.TotalGameTime.Milliseconds % 2 == 0 && !isPausing)
+            {
+                Instance.ConwayNextGeneration();
+            }
         }
 
         public void CreateGrid(int graphicWidth, int graphicsHeight, Texture2D tileTexture2D)
@@ -88,10 +138,16 @@ namespace Conways
                 }
             }
         }
+
+        public void ConwayNextGeneration()
+        {
+            ConwayModel.Instance.AttachTilesGrid(_grid);
+            ConwayModel.Instance.NextGeneration();
+        }
         
         public Texture2D TileTexture { get; set; }
         public int GridWidth { get; set; }
         public int GridHeight { get; set; }
-
+        
     }
 }

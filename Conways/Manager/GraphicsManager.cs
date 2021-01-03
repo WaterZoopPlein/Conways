@@ -1,4 +1,4 @@
-﻿namespace Conways
+﻿namespace Conways.Manager
 {
     public class GraphicsManager
     {
@@ -16,7 +16,7 @@
             {
                 if (_instance == null)
                 {
-                    _instance = new GraphicsManager(400, 300);
+                    _instance = new GraphicsManager(800, 600);
                 }
                 return _instance;
             }

@@ -1,4 +1,4 @@
-﻿namespace Conways
+﻿namespace Conways.Model
 {
     public enum TileStatus
     {

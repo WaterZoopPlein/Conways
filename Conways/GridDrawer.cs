@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Conways.Manager;
+using Conways.Model;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Conways

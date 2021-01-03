@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Input;
 
-namespace Conways
+namespace Conways.Manager
 {
     public class InputManager
     {
@@ -47,6 +47,16 @@ namespace Conways
 
             return _currentKeyboardState.IsKeyDown(key);
 
+        }
+
+        public int GetMouseXPosition()
+        {
+            return _currentMouseState.X;
+        }
+
+        public int GetMouseYPosition()
+        {
+            return _currentMouseState.Y;
         }
 
         public bool IsMouseLeftButtonClicked()
