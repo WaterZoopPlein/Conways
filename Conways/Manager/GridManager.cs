@@ -64,7 +64,7 @@ namespace Conways.Manager
 
             if (InputManager.Instance.IsKeyPressed(Keys.R) && isPausing)
             {
-                Instance.GenerateRandomGrid(0.5);
+                Instance.GenerateRandomGrid(0.25);
             }
 
             if (InputManager.Instance.IsKeyPressed(Keys.C) && isPausing)
